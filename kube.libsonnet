@@ -2,24 +2,24 @@
   This library contains general Kubernetes objects.
 */
 {
-  CRD(isCluserScoped, kind, singular, plural, group, shortNames=[], versions=[]):: ({
-                                                                                      apiVersion: 'apiextensions.k8s.io/v1',
-                                                                                      kind: 'CustomResourceDefinition',
-                                                                                      metadata: {
-                                                                                        name: plural + '.' + group,
-                                                                                      },
-                                                                                      spec: {
-                                                                                        group: group,
-                                                                                        scope: if isCluserScoped then 'Cluster' else 'Namespaced',
-                                                                                        versions: versions,
-                                                                                        names: {
-                                                                                          plural: plural,
-                                                                                          singular: singular,
-                                                                                          kind: kind,
-                                                                                          shortNames: shortNames,
-                                                                                        },
-                                                                                      },
-                                                                                    }),
+  CRD(isClusterScoped=false, kind, singular, plural, group, shortNames=[], versions=[]):: ({
+                                                                                             apiVersion: 'apiextensions.k8s.io/v1',
+                                                                                             kind: 'CustomResourceDefinition',
+                                                                                             metadata: {
+                                                                                               name: plural + '.' + group,
+                                                                                             },
+                                                                                             spec: {
+                                                                                               group: group,
+                                                                                               scope: if isClusterScoped then 'Cluster' else 'Namespaced',
+                                                                                               versions: versions,
+                                                                                               names: {
+                                                                                                 plural: plural,
+                                                                                                 singular: singular,
+                                                                                                 kind: kind,
+                                                                                                 shortNames: shortNames,
+                                                                                               },
+                                                                                             },
+                                                                                           }),
   Deployment(namespace, name, replicas, serviceAccountName=null, containers=[], volumes=[]):: ({
                                                                                                  apiVersion: 'apps/v1',
                                                                                                  kind: 'Deployment',
@@ -127,4 +127,13 @@
                                                 namespace: namespace,
                                                 name: name,
                                               }),
+  ConfigMap(name, namespace, data):: ({
+                                        apiVersion: 'v1',
+                                        kind: 'ConfigMap',
+                                        metadata: {
+                                          name: name,
+                                          namespace: namespace,
+                                        },
+                                        data: data,
+                                      }),
 }
