@@ -68,20 +68,20 @@
                               },
                               imagePullPolicy: 'IfNotPresent',
                             }),
-  HeadlessService(namespace, name, labels, selector, ports):: ({
-                                                                 apiVersion: 'v1',
-                                                                 kind: 'Service',
-                                                                 metadata: {
-                                                                   name: name,
-                                                                   namespace: namespace,
-                                                                   [if labels != null then 'labels' else null]: labels,
-                                                                 },
-                                                                 spec: {
-                                                                   clusterIP: 'None',
-                                                                   selector: selector,
-                                                                   ports: ports,
-                                                                 },
-                                                               }),
+  Service(namespace, name, labels=null, selector, ports, headless=false):: ({
+                                                                              apiVersion: 'v1',
+                                                                              kind: 'Service',
+                                                                              metadata: {
+                                                                                name: name,
+                                                                                namespace: namespace,
+                                                                                [if labels != null then 'labels' else null]: labels,
+                                                                              },
+                                                                              spec: {
+                                                                                [if headless then 'clusterIP' else null]: 'None',
+                                                                                selector: selector,
+                                                                                ports: ports,
+                                                                              },
+                                                                            }),
   ServiceAccount(name, namespace):: ({
                                        apiVersion: 'v1',
                                        kind: 'ServiceAccount',
