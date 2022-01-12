@@ -2,24 +2,83 @@
   This library contains general Kubernetes objects.
 */
 {
-  CRD(isClusterScoped=false, kind, singular, plural, group, shortNames=[], versions=[]):: ({
-                                                                                             apiVersion: 'apiextensions.k8s.io/v1',
-                                                                                             kind: 'CustomResourceDefinition',
-                                                                                             metadata: {
-                                                                                               name: plural + '.' + group,
-                                                                                             },
-                                                                                             spec: {
-                                                                                               group: group,
-                                                                                               scope: if isClusterScoped then 'Cluster' else 'Namespaced',
-                                                                                               versions: versions,
-                                                                                               names: {
-                                                                                                 plural: plural,
-                                                                                                 singular: singular,
-                                                                                                 kind: kind,
-                                                                                                 shortNames: shortNames,
-                                                                                               },
-                                                                                             },
-                                                                                           }),
+  CRD(isClusterScoped=false, kind, singular, plural, group, shortNames=[], versions=[]):: (
+    local version(v) =
+      local setStatus = std.objectHas(v.schema.openAPIV3Schema.properties, 'status');
+      v {
+        schema+: {
+          openAPIV3Schema+: {
+            properties+: {
+              [if setStatus then 'status' else null]+: {
+                type: 'object',
+                description: 'Status of object',
+                properties+: {
+                  conditions: {
+                    type: 'array',
+                    default: [],
+                    description: 'List of conditions',
+                    items: {
+                      type: 'object',
+                      description: 'Condition',
+                      required: ['type', 'status'],
+                      properties: {
+                        type: {
+                          type: 'string',
+                          description: 'Type of condition',
+                        },
+                        status: {
+                          type: 'string',
+                          description: 'Status of the condition, one of **True**, **False**, **Unknown**',
+                          enum: ['True', 'False', 'Unknown'],
+                        },
+                        reason: {
+                          type: 'string',
+                          description: "One-word CamelCase reason for the condition's last transition",
+                        },
+                        message: {
+                          type: 'string',
+                          description: 'Human-readable message indicating details about last transition',
+                        },
+                        lastHeartbeatTime: {
+                          type: 'string',
+                          description: 'Last time we got an update on a given condition',
+                        },
+                        lastTransitionTime: {
+                          type: 'string',
+                          description: 'Last time the condition transit from one status to another',
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        [if setStatus then 'subresources' else null]+: {
+          status: {},
+        },
+      };
+
+    {
+      apiVersion: 'apiextensions.k8s.io/v1',
+      kind: 'CustomResourceDefinition',
+      metadata: {
+        name: plural + '.' + group,
+      },
+      spec: {
+        group: group,
+        scope: if isClusterScoped then 'Cluster' else 'Namespaced',
+        versions: [version(v) for v in versions],
+        names: {
+          plural: plural,
+          singular: singular,
+          kind: kind,
+          shortNames: shortNames,
+        },
+      },
+    }
+  ),
   Deployment(namespace, name, replicas, serviceAccountName=null, containers=[], volumes=[]):: ({
                                                                                                  apiVersion: 'apps/v1',
                                                                                                  kind: 'Deployment',
