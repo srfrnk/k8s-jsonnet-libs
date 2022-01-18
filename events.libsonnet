@@ -51,7 +51,6 @@
               apiVersion,
               kind,
               uid,
-              resourceVersion,
               action,
               reason,
               type,
@@ -73,7 +72,6 @@
                                           name=name,
                                           namespace=namespace,
                                           uid=uid,
-                                          resourceVersion=resourceVersion,
                                         ),
                                         count=count)),
 }
