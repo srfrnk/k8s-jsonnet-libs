@@ -11,7 +11,8 @@
             properties+: {
               [if setStatus then 'status' else null]+: {
                 type: 'object',
-                description: 'Status of object',
+                description: (if std.objectHas(v.schema.openAPIV3Schema.properties.status, 'description')
+                              then v.schema.openAPIV3Schema.properties.status.description else 'Status of object'),
                 properties+: {
                   conditions: {
                     type: 'array',
